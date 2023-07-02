@@ -11,21 +11,10 @@
     <packaging>pom</packaging>
 
     <name>ewm-stats</name>
-    <url>http://maven.apache.org</url>
+
     <modules>
         <module>server</module>
         <module>client</module>
         <module>dto</module>
     </modules>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-    </dependencies>
 </project>
