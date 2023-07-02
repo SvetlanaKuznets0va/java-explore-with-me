@@ -7,7 +7,6 @@ import ru.practicum.dto.HitDto;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.service.StatsService;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
