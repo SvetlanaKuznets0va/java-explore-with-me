@@ -4,8 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AppStatsClient
-{
+public class AppStatsClient {
     public static void main(String[] args) {
         SpringApplication.run(AppStatsClient.class, args);
     }
