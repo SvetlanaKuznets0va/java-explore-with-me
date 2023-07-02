@@ -45,9 +45,6 @@ public class StatsServiceImpl implements StatsService {
         if (unique) {
             return repository.getAllUriStatsWithUniqueIp(startF, endF, uris);
         }
-        if (!unique) {
-            return repository.getAllUriStats(startF, endF, uris);
-        }
-        return null;
+        return repository.getAllUriStats(startF, endF, uris);
     }
 }
