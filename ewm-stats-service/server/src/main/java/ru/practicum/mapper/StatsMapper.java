@@ -1,14 +1,15 @@
 package ru.practicum.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.dto.HitDto;
 import ru.practicum.model.StatsModel;
 
 import java.time.LocalDateTime;
 
 import static ru.practicum.constants.Constants.LDT_FORMATTER;
-
+@UtilityClass
 public class StatsMapper {
-    public static StatsModel toStatsModel(HitDto hitDto) {
+    public StatsModel toStatsModel(HitDto hitDto) {
         return new StatsModel(0,
                 hitDto.getApp(),
                 hitDto.getUri(),
@@ -16,7 +17,7 @@ public class StatsMapper {
                 LocalDateTime.parse(hitDto.getTimestamp(), LDT_FORMATTER));
     }
 
-    public static HitDto toStatsDto(StatsModel stats) {
+    public HitDto toStatsDto(StatsModel stats) {
         return new HitDto(stats.getId(),
                 stats.getApp(),
                 stats.getUri(),

@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.dto.HitDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ public class StatsClient extends BaseClient {
         return post("/hit", hitDto);
     }
 
-    public ResponseEntity<Object> getStats(String start, String end, List<String> uris, boolean unique) {
+    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
 
         Map<String, Object> parameters;
         StringBuilder path = new StringBuilder("/stats?");

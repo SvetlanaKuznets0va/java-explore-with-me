@@ -1,6 +1,5 @@
 package ru.practicum.constants;
 
-
 import java.time.format.DateTimeFormatter;
 
 public class Constants {

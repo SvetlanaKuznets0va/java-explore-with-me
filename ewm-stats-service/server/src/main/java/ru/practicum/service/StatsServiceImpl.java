@@ -1,7 +1,9 @@
 package ru.practicum.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.practicum.dto.HitDto;
 import ru.practicum.dto.StatsDto;
@@ -12,19 +14,14 @@ import ru.practicum.repository.StatsRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.practicum.constants.Constants.LDT_FORMATTER;
-
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class StatsServiceImpl implements StatsService {
-
-    private StatsRepository repository;
-
-    public StatsServiceImpl(StatsRepository repository) {
-        this.repository = repository;
-    }
+    private final StatsRepository repository;
 
     @Override
+    @Transactional
     public HitDto add(HitDto hitDto) {
         StatsModel statsModel = repository.save(StatsMapper.toStatsModel(hitDto));
         log.info("Stats saved: {}", statsModel);
@@ -32,19 +29,17 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<StatsDto> getStats(String start, String end, List<String> uris, boolean unique) {
-        LocalDateTime startF = LocalDateTime.parse(start, LDT_FORMATTER);
-        LocalDateTime endF = LocalDateTime.parse(end, LDT_FORMATTER);
-
+    @Transactional(readOnly = true)
+    public List<StatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
         if (CollectionUtils.isEmpty(uris) && unique) {
-            return repository.getAllStatsWithUniqueIp(startF, endF);
+            return repository.getAllStatsWithUniqueIp(start, end);
         }
         if (CollectionUtils.isEmpty(uris) && !unique) {
-            return repository.getAllStats(startF, endF);
+            return repository.getAllStats(start, end);
         }
         if (unique) {
-            return repository.getAllUriStatsWithUniqueIp(startF, endF, uris);
+            return repository.getAllUriStatsWithUniqueIp(start, end, uris);
         }
-        return repository.getAllUriStats(startF, endF, uris);
+        return repository.getAllUriStats(start, end, uris);
     }
 }
