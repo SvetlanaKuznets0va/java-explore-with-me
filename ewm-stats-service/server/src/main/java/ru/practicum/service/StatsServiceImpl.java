@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.practicum.dto.HitDto;
 import ru.practicum.dto.StatsDto;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.StatsMapper;
 import ru.practicum.model.StatsModel;
 import ru.practicum.repository.StatsRepository;
@@ -31,6 +32,10 @@ public class StatsServiceImpl implements StatsService {
     @Override
     @Transactional(readOnly = true)
     public List<StatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+        if (start.isAfter(end) || start.isEqual(end)) {
+            throw new ValidationException("Invalid date format");
+        }
+
         if (CollectionUtils.isEmpty(uris) && unique) {
             return repository.getAllStatsWithUniqueIp(start, end);
         }

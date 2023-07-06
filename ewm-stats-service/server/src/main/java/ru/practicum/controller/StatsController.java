@@ -8,6 +8,7 @@ import ru.practicum.dto.HitDto;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.service.StatsService;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class StatsController {
     private final StatsService statsService;
 
     @PostMapping("/hit")
-    public HitDto add(@RequestBody HitDto hitDto) {
+    public HitDto add(@RequestBody @Valid HitDto hitDto) {
         log.info("Saving stats");
         return statsService.add(hitDto);
     }
@@ -31,7 +32,7 @@ public class StatsController {
     public List<StatsDto> getStats(@RequestParam @DateTimeFormat(pattern = LDT_FORMAT) LocalDateTime start,
                                    @RequestParam @DateTimeFormat(pattern = LDT_FORMAT) LocalDateTime end,
                                    @RequestParam(required = false) List<String> uris,
-                                   @RequestParam(required = false, defaultValue = "false") boolean unique) {
+                                   @RequestParam(defaultValue = "false") boolean unique) {
         log.info("Getting stats: start {}, end {}, uris {}, unique {}", start, end, uris, unique);
         return statsService.getStats(start, end, uris, unique);
     }

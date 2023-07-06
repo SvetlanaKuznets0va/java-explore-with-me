@@ -4,9 +4,6 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.dto.HitDto;
 import ru.practicum.model.StatsModel;
 
-import java.time.LocalDateTime;
-
-import static ru.practicum.constants.Constants.LDT_FORMATTER;
 @UtilityClass
 public class StatsMapper {
     public StatsModel toStatsModel(HitDto hitDto) {
@@ -14,7 +11,7 @@ public class StatsMapper {
                 hitDto.getApp(),
                 hitDto.getUri(),
                 hitDto.getIp(),
-                LocalDateTime.parse(hitDto.getTimestamp(), LDT_FORMATTER));
+                hitDto.getTimestamp());
     }
 
     public HitDto toStatsDto(StatsModel stats) {
@@ -22,6 +19,6 @@ public class StatsMapper {
                 stats.getApp(),
                 stats.getUri(),
                 stats.getIp(),
-                stats.getTimestamp().toString());
+                stats.getTimestamp());
     }
 }
