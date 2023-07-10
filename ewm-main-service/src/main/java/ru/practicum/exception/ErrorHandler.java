@@ -37,10 +37,21 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorApi handleValidationException(MethodArgumentNotValidException exception) {
-        log.error(exception.toString());
+        log.info(exception.toString());
         return new ErrorApi(
                 HttpStatus.BAD_REQUEST,
                 "Incorrectly made request.",
+                exception.getLocalizedMessage(),
+                LocalDateTime.now());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorApi handleValidationException(NotFoundException exception) {
+        log.info(exception.toString());
+        return new ErrorApi(
+                HttpStatus.NOT_FOUND,
+                "Object not found.",
                 exception.getLocalizedMessage(),
                 LocalDateTime.now());
     }
