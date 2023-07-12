@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.dto.NewUserRequest;
 import ru.practicum.user.dto.UserDto;
@@ -52,5 +53,11 @@ public class UserServiceImpl implements UserService {
     public void deleteUserById(int userId) {
         userRepository.deleteById(userId);
         log.info("User with id {} was deleted", userId);
+    }
+
+    @Override
+    @Transactional
+    public UserModel findUserById(int userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
     }
 }

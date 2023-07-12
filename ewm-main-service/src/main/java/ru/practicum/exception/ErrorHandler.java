@@ -55,4 +55,15 @@ public class ErrorHandler {
                 exception.getLocalizedMessage(),
                 LocalDateTime.now());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorApi handleInvalidDataException(InvalidDataException exception) {
+        log.info(exception.toString());
+        return new ErrorApi(
+                HttpStatus.FORBIDDEN,
+                "Invalid event data.",
+                exception.getLocalizedMessage(),
+                LocalDateTime.now());
+    }
 }

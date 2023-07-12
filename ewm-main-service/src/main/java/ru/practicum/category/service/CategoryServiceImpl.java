@@ -66,6 +66,11 @@ public class CategoryServiceImpl implements CategoryService{
         return CategoryMapper.toCategoryDto(categoryModel);
     }
 
+    @Override
+    public CategoryModel findCategoryById(int catId) {
+        return categoryRepository.findById(catId).orElseThrow(() -> nfeException(catId));
+    }
+
     private NotFoundException nfeException(int catId) {
         return new NotFoundException(String.format("Category with id %d not found", catId));
     }
