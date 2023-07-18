@@ -8,10 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import ru.practicum.category.model.CategoryModel;
 import ru.practicum.category.service.CategoryService;
 import ru.practicum.client.StatsClient;
+import ru.practicum.constants.EventSortVariant;
 import ru.practicum.constants.State;
+import ru.practicum.dto.HitDto;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
@@ -25,10 +28,16 @@ import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.model.UserModel;
 import ru.practicum.user.service.UserService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.practicum.constants.Constants.APP_NAME;
+import static ru.practicum.constants.Constants.LDT_FORMAT;
+import static ru.practicum.constants.EventSortVariant.EVENT_DATE;
+import static ru.practicum.constants.EventSortVariant.VIEWS;
 import static ru.practicum.constants.State.PENDING;
 import static ru.practicum.constants.State.PUBLISHED;
 
@@ -106,6 +115,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventFullDto> adminGetEvents(List<Integer> users, List<State> states, List<Integer> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable) {
         if (rangeStart.isAfter(rangeEnd) || rangeStart.isEqual(rangeEnd)) {
             throw new InvalidDataException("Invalid date format");
@@ -115,20 +125,21 @@ public class EventServiceImpl implements EventService {
         if (!(users.isEmpty() && states.isEmpty() && categories.isEmpty())) {
             events = eventRepository.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
         }
-        Map<Integer, Long> views;
-        if (events.isEmpty()) {
-            views = Collections.EMPTY_MAP;
-        } else {
-            views = getViews(events);
+        //TODO сделать ифы на другие случаи
+        if (CollectionUtils.isEmpty(events)) {
+            return Collections.emptyList();
         }
+        Map<Integer, Long> views = getViews(events);
+
         return events.stream()
                 .map(e -> EventMapper.toEventFullDto(e, views))
                 .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public EventFullDto adminUpdateEventById(int eventId, UpdateEventAdminRequest updateEventAdminRequest) {
-        if ( updateEventAdminRequest.getEventDate() != null && updateEventAdminRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
+        if (updateEventAdminRequest.getEventDate() != null && updateEventAdminRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
             throw new InvalidDataException("Event cannot be updated until the start date is less than an hour away");
         }
         CategoryModel categoryModel = null;
@@ -147,6 +158,66 @@ public class EventServiceImpl implements EventService {
         return EventMapper.toEventFullDto(updateEvent);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<EventShortDto> publicGetEvents(String text, List<Integer> categories, Boolean paid,
+                                               LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                               Boolean onlyAvailable, EventSortVariant sort,
+                                               Pageable pageable, HttpServletRequest request) {
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.now();
+        }
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.MAX;
+        }
+
+        if (rangeStart.isAfter(rangeEnd) || rangeStart.isEqual(rangeEnd)) {
+            throw new InvalidDataException("Invalid date format");
+        }
+
+        List<EventModel> events = eventRepository.publicGetEvents(PUBLISHED, text, categories, paid, rangeStart, rangeEnd, pageable);
+
+        if (events.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Map<Integer, Long> views = getViews(events);
+
+
+        if (onlyAvailable) {
+            //TODO сделать проверку событий на заполненность
+        }
+
+        List<EventShortDto> result = events.stream()
+                .map(e -> EventMapper.toEventShortDto(e, views))
+                .collect(Collectors.toList());
+
+        if (sort == VIEWS) {
+            result.sort(Comparator.comparing(EventShortDto::getViews));
+        } else if (sort == EVENT_DATE) {
+            result.sort(Comparator.comparing(EventShortDto::getEventDate));
+        }
+
+        statsClient.add(new HitDto(0, APP_NAME, request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.parse(LocalDateTime.now().format(DateTimeFormatter.ofPattern(LDT_FORMAT)), DateTimeFormatter.ofPattern(LDT_FORMAT))));
+        return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EventFullDto publicGetEvent(int id, HttpServletRequest request) {
+        EventModel event = eventRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", id)));
+
+        if (event.getState() != PUBLISHED) {
+            throw new NotFoundException(String.format("Event with id = %d not found", id));
+        }
+
+        statsClient.add(new HitDto(0, APP_NAME, request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.parse(LocalDateTime.now().format(DateTimeFormatter.ofPattern(LDT_FORMAT)), DateTimeFormatter.ofPattern(LDT_FORMAT))));
+
+        return EventMapper.toEventFullDto(event);
+    }
+
     private EventModel getEventModelByUser(int userId, int eventId) {
         return eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
@@ -157,7 +228,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void checkEventDate(LocalDateTime eventDate) {
-        if (LocalDateTime.now().plusHours(2).isAfter(eventDate)) {
+        if (eventDate != null && LocalDateTime.now().plusHours(2).isAfter(eventDate)) {
             throw new InvalidDataException(String.format("Event date %s invalid", eventDate));
         }
     }

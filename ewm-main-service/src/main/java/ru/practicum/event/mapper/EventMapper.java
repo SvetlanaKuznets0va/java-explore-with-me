@@ -121,8 +121,8 @@ public class EventMapper {
     }
 
     public EventModel toEventModelAdminUpdate(EventModel eventModel,
-                                             UpdateEventAdminRequest updateEventAdminRequest,
-                                             CategoryModel categoryModel) {
+                                              UpdateEventAdminRequest updateEventAdminRequest,
+                                              CategoryModel categoryModel) {
         State state = checkAdminStateAction(updateEventAdminRequest.getStateAction(), eventModel);
 
         return new EventModel(

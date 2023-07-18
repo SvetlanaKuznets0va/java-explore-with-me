@@ -59,13 +59,13 @@ public class PrivateEventController {
     @GetMapping("/{eventId}/requests")
     public List<ParticipationRequestDto> getEventRequestsByEventOwner(@PathVariable Long userId,
                                                                       @PathVariable Long eventId) {
-        return null;
+        return null; //TODO доделать реквесты
     }
 
     @PatchMapping("/{eventId}/requests")
     public EventRequestStatusUpdateResult updateEventRequestsByEventOwner(@PathVariable Long userId,
                                                                          @PathVariable Long eventId,
                                                                          @Valid @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
-        return null;
+        return null; //TODO доделать реквесты
     }
 }

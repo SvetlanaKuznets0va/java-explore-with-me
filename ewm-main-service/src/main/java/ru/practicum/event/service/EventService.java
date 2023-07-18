@@ -1,9 +1,11 @@
 package ru.practicum.event.service;
 
 import org.springframework.data.domain.Pageable;
+import ru.practicum.constants.EventSortVariant;
 import ru.practicum.constants.State;
 import ru.practicum.event.dto.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,4 +22,11 @@ public interface EventService {
                                       LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable);
 
     EventFullDto adminUpdateEventById(int eventId, UpdateEventAdminRequest updateEventAdminRequest);
+
+    List<EventShortDto> publicGetEvents(String text, List<Integer> categories, Boolean paid,
+                                        LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                        Boolean onlyAvailable, EventSortVariant sort,
+                                        Pageable pageable, HttpServletRequest request);
+
+    EventFullDto publicGetEvent(int id, HttpServletRequest request);
 }
