@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.constants.UserStateAction;
+import ru.practicum.constants.AdminStateAction;
 
-import javax.validation.constraints.Future;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -15,7 +14,7 @@ import static ru.practicum.constants.Constants.LDT_FORMAT;
 
 @Data
 @AllArgsConstructor
-public class UpdateEventUserRequest {
+public class UpdateEventAdminRequest {
     @Size(min = 20, max = 2000)
     private String annotation;
     @Positive
@@ -24,13 +23,12 @@ public class UpdateEventUserRequest {
     private String description;
     @JsonFormat(pattern = LDT_FORMAT)
     @DateTimeFormat(pattern = LDT_FORMAT)
-    @Future
     private LocalDateTime eventDate;
     private LocationDto location;
     private Boolean paid;
     private Integer participantLimit;
     private Boolean requestModeration;
-    private UserStateAction stateAction;
+    private AdminStateAction stateAction;
     @Size(min = 3, max = 120)
     private String title;
 }

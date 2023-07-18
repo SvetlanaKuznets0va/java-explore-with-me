@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.model.CategoryModel;
 import ru.practicum.category.service.CategoryService;
 import ru.practicum.client.StatsClient;
+import ru.practicum.constants.State;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.practicum.constants.State.PENDING;
 import static ru.practicum.constants.State.PUBLISHED;
 
 @Service
@@ -97,9 +99,51 @@ public class EventServiceImpl implements EventService {
             throw new InvalidDataException("Event can be updated if it is canceled or moderation status");
         }
 
-        EventModel updateEvent = EventMapper.toEventModelUpdate(event, updateEventUserRequest, categoryModel);
+        EventModel updateEvent = EventMapper.toEventModelUserUpdate(event, updateEventUserRequest, categoryModel);
         updateEvent = eventRepository.save(updateEvent);
         log.info("Event {} was updated {}", event, updateEvent);
+        return EventMapper.toEventFullDto(updateEvent);
+    }
+
+    @Override
+    public List<EventFullDto> adminGetEvents(List<Integer> users, List<State> states, List<Integer> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable) {
+        if (rangeStart.isAfter(rangeEnd) || rangeStart.isEqual(rangeEnd)) {
+            throw new InvalidDataException("Invalid date format");
+        }
+
+        List<EventModel> events = null;
+        if (!(users.isEmpty() && states.isEmpty() && categories.isEmpty())) {
+            events = eventRepository.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
+        }
+        Map<Integer, Long> views;
+        if (events.isEmpty()) {
+            views = Collections.EMPTY_MAP;
+        } else {
+            views = getViews(events);
+        }
+        return events.stream()
+                .map(e -> EventMapper.toEventFullDto(e, views))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public EventFullDto adminUpdateEventById(int eventId, UpdateEventAdminRequest updateEventAdminRequest) {
+        if ( updateEventAdminRequest.getEventDate() != null && updateEventAdminRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
+            throw new InvalidDataException("Event cannot be updated until the start date is less than an hour away");
+        }
+        CategoryModel categoryModel = null;
+        if (updateEventAdminRequest.getCategory() != null) {
+            categoryModel = categoryService.findCategoryById(updateEventAdminRequest.getCategory());
+        }
+        EventModel event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
+        if (event.getState() != PENDING) {
+            throw new InvalidDataException("Event cannot be updated it is not pending status");
+        }
+
+        EventModel updateEvent = EventMapper.toEventModelAdminUpdate(event, updateEventAdminRequest, categoryModel);
+        updateEvent = eventRepository.save(updateEvent);
+        log.info("Event {} was updated {} by admin", event, updateEvent);
         return EventMapper.toEventFullDto(updateEvent);
     }
 

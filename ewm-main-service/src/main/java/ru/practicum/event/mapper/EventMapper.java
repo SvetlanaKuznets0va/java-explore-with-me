@@ -3,12 +3,10 @@ package ru.practicum.event.mapper;
 import lombok.experimental.UtilityClass;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.CategoryModel;
+import ru.practicum.constants.AdminStateAction;
 import ru.practicum.constants.State;
-import ru.practicum.constants.StateAction;
-import ru.practicum.event.dto.EventFullDto;
-import ru.practicum.event.dto.EventShortDto;
-import ru.practicum.event.dto.NewEventDto;
-import ru.practicum.event.dto.UpdateEventUserRequest;
+import ru.practicum.constants.UserStateAction;
+import ru.practicum.event.dto.*;
 import ru.practicum.event.model.EventModel;
 import ru.practicum.event.model.LocationModel;
 import ru.practicum.user.mapper.UserMapper;
@@ -17,10 +15,11 @@ import ru.practicum.user.model.UserModel;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import static ru.practicum.constants.State.CANCELED;
-import static ru.practicum.constants.State.PENDING;
-import static ru.practicum.constants.StateAction.CANCEL_REVIEW;
-import static ru.practicum.constants.StateAction.SEND_TO_REVIEW;
+import static ru.practicum.constants.AdminStateAction.PUBLISH_EVENT;
+import static ru.practicum.constants.AdminStateAction.REJECT_EVENT;
+import static ru.practicum.constants.State.*;
+import static ru.practicum.constants.UserStateAction.CANCEL_REVIEW;
+import static ru.practicum.constants.UserStateAction.SEND_TO_REVIEW;
 
 @UtilityClass
 public class EventMapper {
@@ -38,7 +37,7 @@ public class EventMapper {
                 location,
                 LocalDateTime.now(),
                 PENDING,
-                LocalDateTime.now(),
+                null,
                 initiator,
                 newEventDto.isRequestModeration()
         );
@@ -100,9 +99,9 @@ public class EventMapper {
         );
     }
 
-    public EventModel toEventModelUpdate(EventModel eventModel,
-                                         UpdateEventUserRequest updateEventUserRequest,
-                                         CategoryModel categoryModel) {
+    public EventModel toEventModelUserUpdate(EventModel eventModel,
+                                             UpdateEventUserRequest updateEventUserRequest,
+                                             CategoryModel categoryModel) {
         return new EventModel(
                 eventModel.getId(),
                 updateEventUserRequest.getTitle() == null ? eventModel.getTitle() : updateEventUserRequest.getTitle(),
@@ -114,19 +113,54 @@ public class EventMapper {
                 updateEventUserRequest.getEventDate() == null ? eventModel.getEventDate() : updateEventUserRequest.getEventDate(),
                 updateEventUserRequest.getLocation() == null ? eventModel.getLocation() : LocationMapper.toLocationModel(updateEventUserRequest.getLocation()),
                 eventModel.getCreatedOn(),
-                checkStateAction(updateEventUserRequest.getStateAction(), eventModel),
+                checkUserStateAction(updateEventUserRequest.getStateAction(), eventModel),
                 eventModel.getPublishedOn(),
                 eventModel.getInitiator(),
                 updateEventUserRequest.getRequestModeration() == null ? eventModel.getRequestModeration() : updateEventUserRequest.getRequestModeration()
         );
     }
 
-    private State checkStateAction(StateAction stateAction, EventModel eventModel) {
-        if (stateAction != null) {
-            if (stateAction == SEND_TO_REVIEW) {
-                return (PENDING);
+    public EventModel toEventModelAdminUpdate(EventModel eventModel,
+                                             UpdateEventAdminRequest updateEventAdminRequest,
+                                             CategoryModel categoryModel) {
+        State state = checkAdminStateAction(updateEventAdminRequest.getStateAction(), eventModel);
+
+        return new EventModel(
+                eventModel.getId(),
+                updateEventAdminRequest.getTitle() == null ? eventModel.getTitle() : updateEventAdminRequest.getTitle(),
+                updateEventAdminRequest.getAnnotation() == null ? eventModel.getAnnotation() : updateEventAdminRequest.getAnnotation(),
+                categoryModel == null ? eventModel.getCategory() : categoryModel,
+                updateEventAdminRequest.getDescription() == null ? eventModel.getDescription() : updateEventAdminRequest.getDescription(),
+                updateEventAdminRequest.getPaid() == null ? eventModel.getPaid() : updateEventAdminRequest.getPaid(),
+                updateEventAdminRequest.getParticipantLimit() == null ? eventModel.getParticipantLimit() : updateEventAdminRequest.getParticipantLimit(),
+                updateEventAdminRequest.getEventDate() == null ? eventModel.getEventDate() : updateEventAdminRequest.getEventDate(),
+                updateEventAdminRequest.getLocation() == null ? eventModel.getLocation() : LocationMapper.toLocationModel(updateEventAdminRequest.getLocation()),
+                eventModel.getCreatedOn(),
+                state,
+                state == PUBLISHED ? LocalDateTime.now() : eventModel.getPublishedOn(),
+                eventModel.getInitiator(),
+                updateEventAdminRequest.getRequestModeration() == null ? eventModel.getRequestModeration() : updateEventAdminRequest.getRequestModeration()
+        );
+    }
+
+    private State checkAdminStateAction(AdminStateAction adminStateAction, EventModel eventModel) {
+        if (adminStateAction != null) {
+            if (adminStateAction == PUBLISH_EVENT) {
+                return PUBLISHED;
             }
-            if (stateAction == CANCEL_REVIEW) {
+            if (adminStateAction == REJECT_EVENT) {
+                return REJECTED;
+            }
+        }
+        return eventModel.getState();
+    }
+
+    private State checkUserStateAction(UserStateAction userStateAction, EventModel eventModel) {
+        if (userStateAction != null) {
+            if (userStateAction == SEND_TO_REVIEW) {
+                return PENDING;
+            }
+            if (userStateAction == CANCEL_REVIEW) {
                 return CANCELED;
             }
         }
