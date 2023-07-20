@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import ru.practicum.constants.EventSortVariant;
 import ru.practicum.constants.State;
 import ru.practicum.event.dto.*;
+import ru.practicum.event.model.EventModel;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -29,4 +30,6 @@ public interface EventService {
                                         Pageable pageable, HttpServletRequest request);
 
     EventFullDto publicGetEvent(int id, HttpServletRequest request);
+
+    EventModel findEventModelById(int userId);
 }

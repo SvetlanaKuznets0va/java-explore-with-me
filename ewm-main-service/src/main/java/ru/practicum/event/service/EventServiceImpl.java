@@ -218,6 +218,13 @@ public class EventServiceImpl implements EventService {
         return EventMapper.toEventFullDto(event);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public EventModel findEventModelById(int eventId) {
+        return eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
+    }
+
     private EventModel getEventModelByUser(int userId, int eventId) {
         return eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));

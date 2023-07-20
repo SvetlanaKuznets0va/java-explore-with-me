@@ -1,10 +1,10 @@
-package ru.practicum.event.dto;
+package ru.practicum.request.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.constants.State;
+import ru.practicum.constants.RequestStatus;
 
 import java.time.LocalDateTime;
 
@@ -19,5 +19,5 @@ public class ParticipationRequestDto {
     private int event;
     private int id;
     private int requester;
-    private State status;
+    private RequestStatus status;
 }
