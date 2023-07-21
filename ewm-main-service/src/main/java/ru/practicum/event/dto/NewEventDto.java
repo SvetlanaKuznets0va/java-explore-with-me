@@ -25,7 +25,6 @@ public class NewEventDto {
     private String description;
     @JsonFormat(pattern = LDT_FORMAT)
     @DateTimeFormat(pattern = LDT_FORMAT)
-    @Future
     private LocalDateTime eventDate;
 
     @NotNull

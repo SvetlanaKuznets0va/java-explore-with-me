@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.service.RequestService;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -16,12 +17,12 @@ import java.util.List;
 @RequestMapping("/users/{userId}/requests")
 @Validated
 public class PrivateRequestController {
-    RequestService requestService;
+    private final RequestService requestService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto addRequest(@PathVariable int userId,
-                                              @RequestParam int eventId) {
+                                              @RequestParam (required = false) @NotNull Integer eventId) {
         log.info("Request by user id={} on event id={} will be added", userId, eventId);
         return requestService.addRequest(userId, eventId);
     }

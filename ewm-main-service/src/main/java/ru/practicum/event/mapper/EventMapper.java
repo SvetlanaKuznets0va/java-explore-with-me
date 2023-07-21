@@ -120,26 +120,26 @@ public class EventMapper {
         );
     }
 
-    public EventModel toEventModelAdminUpdate(EventModel eventModel,
-                                              UpdateEventAdminRequest updateEventAdminRequest,
-                                              CategoryModel categoryModel) {
-        State state = checkAdminStateAction(updateEventAdminRequest.getStateAction(), eventModel);
+    public EventModel toEventModelAdminUpdate(EventModel em,
+                                              UpdateEventAdminRequest uear,
+                                              CategoryModel cm) {
+        State state = checkAdminStateAction(uear.getStateAction(), em);
 
         return new EventModel(
-                eventModel.getId(),
-                updateEventAdminRequest.getTitle() == null ? eventModel.getTitle() : updateEventAdminRequest.getTitle(),
-                updateEventAdminRequest.getAnnotation() == null ? eventModel.getAnnotation() : updateEventAdminRequest.getAnnotation(),
-                categoryModel == null ? eventModel.getCategory() : categoryModel,
-                updateEventAdminRequest.getDescription() == null ? eventModel.getDescription() : updateEventAdminRequest.getDescription(),
-                updateEventAdminRequest.getPaid() == null ? eventModel.getPaid() : updateEventAdminRequest.getPaid(),
-                updateEventAdminRequest.getParticipantLimit() == null ? eventModel.getParticipantLimit() : updateEventAdminRequest.getParticipantLimit(),
-                updateEventAdminRequest.getEventDate() == null ? eventModel.getEventDate() : updateEventAdminRequest.getEventDate(),
-                updateEventAdminRequest.getLocation() == null ? eventModel.getLocation() : LocationMapper.toLocationModel(updateEventAdminRequest.getLocation()),
-                eventModel.getCreatedOn(),
+                em.getId(),
+                uear.getTitle() == null ? em.getTitle() : uear.getTitle(),
+                uear.getAnnotation() == null ? em.getAnnotation() : uear.getAnnotation(),
+                cm == null ? em.getCategory() : cm,
+                uear.getDescription() == null ? em.getDescription() : uear.getDescription(),
+                uear.getPaid() == null ? em.getPaid() : uear.getPaid(),
+                uear.getParticipantLimit() == null ? em.getParticipantLimit() : uear.getParticipantLimit(),
+                uear.getEventDate() == null ? em.getEventDate() : uear.getEventDate(),
+                uear.getLocation() == null ? em.getLocation() : new LocationModel(em.getLocation().getId(), uear.getLocation().getLat(), uear.getLocation().getLon()),
+                em.getCreatedOn(),
                 state,
-                state == PUBLISHED ? LocalDateTime.now() : eventModel.getPublishedOn(),
-                eventModel.getInitiator(),
-                updateEventAdminRequest.getRequestModeration() == null ? eventModel.getRequestModeration() : updateEventAdminRequest.getRequestModeration()
+                state == PUBLISHED ? LocalDateTime.now() : em.getPublishedOn(),
+                em.getInitiator(),
+                uear.getRequestModeration() == null ? em.getRequestModeration() : uear.getRequestModeration()
         );
     }
 

@@ -9,6 +9,7 @@ import ru.practicum.event.model.EventModel;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public interface EventService {
     EventFullDto privateAddEvent(int userId, NewEventDto newEventDto);
@@ -20,7 +21,7 @@ public interface EventService {
     EventFullDto privateUpdateEvent(int userId, int eventId, UpdateEventUserRequest updateEventUserRequest);
 
     List<EventFullDto> adminGetEvents(List<Integer> users, List<State> states, List<Integer> categories,
-                                      LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable);
+                                      LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
 
     EventFullDto adminUpdateEventById(int eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
@@ -32,4 +33,6 @@ public interface EventService {
     EventFullDto publicGetEvent(int id, HttpServletRequest request);
 
     EventModel findEventModelById(int userId);
+
+    Map<Integer, Long> getViews(List<EventModel> events);
 }

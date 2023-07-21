@@ -23,8 +23,10 @@ import ru.practicum.event.model.EventModel;
 import ru.practicum.event.model.LocationModel;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.repository.LocationRepository;
+import ru.practicum.exception.ConflictDataException;
 import ru.practicum.exception.InvalidDataException;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.model.UserModel;
 import ru.practicum.user.service.UserService;
 
@@ -43,13 +45,13 @@ import static ru.practicum.constants.State.PUBLISHED;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 @Slf4j
 public class EventServiceImpl implements EventService {
     private final UserService userService;
     private final CategoryService categoryService;
     private final LocationRepository locationRepository;
     private final EventRepository eventRepository;
+    private final RequestRepository requestRepository;
 
     private final StatsClient statsClient;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -105,7 +107,7 @@ public class EventServiceImpl implements EventService {
 
         EventModel event = getEventModelByUser(userId, eventId);
         if (event.getState() == PUBLISHED) {
-            throw new InvalidDataException("Event can be updated if it is canceled or moderation status");
+            throw new ConflictDataException("Event can be updated if it is canceled or moderation status");
         }
 
         EventModel updateEvent = EventMapper.toEventModelUserUpdate(event, updateEventUserRequest, categoryModel);
@@ -116,16 +118,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventFullDto> adminGetEvents(List<Integer> users, List<State> states, List<Integer> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable) {
-        if (rangeStart.isAfter(rangeEnd) || rangeStart.isEqual(rangeEnd)) {
+    public List<EventFullDto> adminGetEvents(List<Integer> users, List<State> states, List<Integer> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        if (rangeStart != null && rangeEnd != null && (rangeStart.isAfter(rangeEnd) || rangeStart.isEqual(rangeEnd))) {
             throw new InvalidDataException("Invalid date format");
         }
 
-        List<EventModel> events = null;
-        if (!(users.isEmpty() && states.isEmpty() && categories.isEmpty())) {
-            events = eventRepository.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
-        }
-        //TODO сделать ифы на другие случаи
+        List<EventModel> events = eventRepository.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+
         if (CollectionUtils.isEmpty(events)) {
             return Collections.emptyList();
         }
@@ -140,7 +139,7 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto adminUpdateEventById(int eventId, UpdateEventAdminRequest updateEventAdminRequest) {
         if (updateEventAdminRequest.getEventDate() != null && updateEventAdminRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
-            throw new InvalidDataException("Event cannot be updated until the start date is less than an hour away");
+            throw new ConflictDataException("Event cannot be updated until the start date is less than an hour away");
         }
         CategoryModel categoryModel = null;
         if (updateEventAdminRequest.getCategory() != null) {
@@ -149,7 +148,7 @@ public class EventServiceImpl implements EventService {
         EventModel event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
         if (event.getState() != PENDING) {
-            throw new InvalidDataException("Event cannot be updated it is not pending status");
+            throw new ConflictDataException("Event cannot be updated it is not pending status");
         }
 
         EventModel updateEvent = EventMapper.toEventModelAdminUpdate(event, updateEventAdminRequest, categoryModel);
@@ -168,7 +167,7 @@ public class EventServiceImpl implements EventService {
             rangeStart = LocalDateTime.now();
         }
         if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.MAX;
+            rangeEnd = LocalDateTime.now().plusYears(100);
         }
 
         if (rangeStart.isAfter(rangeEnd) || rangeStart.isEqual(rangeEnd)) {
@@ -184,7 +183,10 @@ public class EventServiceImpl implements EventService {
 
 
         if (onlyAvailable) {
-            //TODO сделать проверку событий на заполненность
+            events = events.stream()
+                    .filter(e -> (e.getParticipantLimit() == null ||
+                            e.getParticipantLimit() >= requestRepository.getConfirmedRequests(e.getId())))
+                    .collect(Collectors.toList());
         }
 
         List<EventShortDto> result = events.stream()
@@ -225,22 +227,8 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
     }
 
-    private EventModel getEventModelByUser(int userId, int eventId) {
-        return eventRepository.findByIdAndInitiatorId(eventId, userId)
-                .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
-    }
-
-    private LocationModel addLocation(LocationDto locationDto) {
-        return locationRepository.save(LocationMapper.toLocationModel(locationDto));
-    }
-
-    private void checkEventDate(LocalDateTime eventDate) {
-        if (eventDate != null && LocalDateTime.now().plusHours(2).isAfter(eventDate)) {
-            throw new InvalidDataException(String.format("Event date %s invalid", eventDate));
-        }
-    }
-
-    private Map<Integer, Long> getViews(List<EventModel> events) {
+    @Override
+    public Map<Integer, Long> getViews(List<EventModel> events) {
         Map<Integer, Long> views = new HashMap<>();
 
         List<EventModel> publishedOnEvents = events.stream()
@@ -272,8 +260,21 @@ public class EventServiceImpl implements EventService {
                     .split("/", 0)[2]);
             views.put(eventId, views.getOrDefault(eventId, 0L) + stat.getHits());
         });
-
         return views;
+    }
 
+    private EventModel getEventModelByUser(int userId, int eventId) {
+        return eventRepository.findByIdAndInitiatorId(eventId, userId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
+    }
+
+    private LocationModel addLocation(LocationDto locationDto) {
+        return locationRepository.save(LocationMapper.toLocationModel(locationDto));
+    }
+
+    private void checkEventDate(LocalDateTime eventDate) {
+        if (eventDate != null && LocalDateTime.now().plusHours(2).isAfter(eventDate)) {
+            throw new ConflictDataException(String.format("Event date %s invalid", eventDate));
+        }
     }
 }

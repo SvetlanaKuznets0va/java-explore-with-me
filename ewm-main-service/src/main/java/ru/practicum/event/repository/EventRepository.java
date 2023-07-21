@@ -12,17 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EventRepository extends JpaRepository<EventModel, Integer> {
+public interface EventRepository extends JpaRepository<EventModel, Integer>, EventAdditionalRepository {
     List<EventModel> findAllByInitiatorId(int userId, Pageable pageable);
+    List<EventModel> findAllByIdIn(List<Integer> eventIds);
 
     Optional<EventModel> findByIdAndInitiatorId(int eventId, int userId);
-
-    @Query("select em from EventModel as em " +
-            "where em.initiator.id in ?1 and em.state in ?2 and em.category.id in ?3 " +
-            "and (em.eventDate between ?4 and ?5)")
-    List<EventModel> getEventsByAdmin(List<Integer> users, List<State> states,
-                                      List<Integer> categories, LocalDateTime rangeStart,
-                                      LocalDateTime rangeEnd, Pageable pageable);
 
     @Query("select em from EventModel as em " +
             "where em.state = ?1 " +

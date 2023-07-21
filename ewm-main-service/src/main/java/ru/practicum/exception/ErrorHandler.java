@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
@@ -35,8 +36,31 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorApi handleConflictDataException(ConflictDataException exception) {
+        log.info("ConflictDataException", exception);
+        return new ErrorApi(
+                HttpStatus.CONFLICT,
+                "Integrity constraint has been violated.",
+                exception.getLocalizedMessage(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorApi handleValidationException(MethodArgumentNotValidException exception) {
+        log.info(exception.toString());
+        return new ErrorApi(
+                HttpStatus.BAD_REQUEST,
+                "Incorrectly made request.",
+                exception.getLocalizedMessage(),
+                LocalDateTime.now());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorApi handleValidationException(ConstraintViolationException exception) {
         log.info(exception.toString());
         return new ErrorApi(
                 HttpStatus.BAD_REQUEST,

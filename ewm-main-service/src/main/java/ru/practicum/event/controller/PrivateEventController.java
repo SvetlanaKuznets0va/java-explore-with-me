@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.service.EventService;
 import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.request.service.RequestService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -26,6 +27,7 @@ import static ru.practicum.constants.Constants.DEFAULT_SIZE;
 @Validated
 public class PrivateEventController {
     private final EventService eventService;
+    private final RequestService requestService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -58,15 +60,15 @@ public class PrivateEventController {
     }
 
     @GetMapping("/{eventId}/requests")
-    public List<ParticipationRequestDto> getEventRequestsByEventOwner(@PathVariable Long userId,
-                                                                      @PathVariable Long eventId) {
-        return null; //TODO доделать реквесты
+    public List<ParticipationRequestDto> getEventRequestsByEventOwner(@PathVariable int userId,
+                                                                      @PathVariable int eventId) {
+        return requestService.getEventRequestsByEventOwner(userId, eventId);
     }
 
     @PatchMapping("/{eventId}/requests")
-    public EventRequestStatusUpdateResult updateEventRequestsByEventOwner(@PathVariable Long userId,
-                                                                         @PathVariable Long eventId,
+    public EventRequestStatusUpdateResult updateEventRequestsByEventOwner(@PathVariable int userId,
+                                                                         @PathVariable int eventId,
                                                                          @Valid @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
-        return null; //TODO доделать реквесты
+        return requestService.updateEventRequestsByEventOwner(userId, eventId, eventRequestStatusUpdateRequest);
     }
 }

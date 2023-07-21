@@ -3,6 +3,7 @@ package ru.practicum.event.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.constants.AdminStateAction;
 
@@ -14,6 +15,7 @@ import static ru.practicum.constants.Constants.LDT_FORMAT;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class UpdateEventAdminRequest {
     @Size(min = 20, max = 2000)
     private String annotation;
