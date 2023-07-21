@@ -8,10 +8,7 @@
     </parent>
 
     <artifactId>ewm-main-service</artifactId>
-    <packaging>jar</packaging>
-
-    <name>ewm-main-service</name>
-    <url>http://maven.apache.org</url>
+    <version>0.0.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
