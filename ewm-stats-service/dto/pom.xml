@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>dto</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
 
     <name>dto</name>
 </project>
