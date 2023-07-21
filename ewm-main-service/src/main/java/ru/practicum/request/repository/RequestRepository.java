@@ -15,7 +15,9 @@ public interface RequestRepository extends JpaRepository<RequestModel, Integer> 
     Optional<RequestModel> findRequestModelByIdAndRequester_Id(int requestId, int requesterId);
 
     List<RequestModel> findAllByRequesterId(int requesterId);
+
     List<RequestModel> findAllByIdIn(List<Integer> requestIds);
+
     List<RequestModel> findAllByEventId(int eventId);
 
     @Query("select count(r.id) " +
