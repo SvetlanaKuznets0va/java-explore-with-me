@@ -32,7 +32,7 @@ public class StatsServiceImpl implements StatsService {
     @Override
     @Transactional(readOnly = true)
     public List<StatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        if (start.isAfter(end) || start.isEqual(end)) {
+        if (start == null || end == null || start.isAfter(end) || start.isEqual(end)) {
             throw new ValidationException("Invalid date format");
         }
 

@@ -244,7 +244,7 @@ public class EventServiceImpl implements EventService {
         }
 
         LocalDateTime start = publishedOnEvents.get(0).getPublishedOn();
-        LocalDateTime end = publishedOnEvents.get(publishedOnEvents.size() - 1).getPublishedOn();
+        LocalDateTime end = publishedOnEvents.get(publishedOnEvents.size() - 1).getPublishedOn().plusSeconds(1);
         List<String> uris = publishedOnEvents.stream()
                 .map(EventModel::getId)
                 .map(id -> ("/events/" + id))
