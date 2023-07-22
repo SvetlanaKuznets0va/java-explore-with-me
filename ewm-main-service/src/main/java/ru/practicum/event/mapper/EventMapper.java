@@ -64,11 +64,11 @@ public class EventMapper {
         );
     }
 
-    public EventFullDto toEventFullDto(EventModel eventModel, Map<Integer, Long> views) {
+    public EventFullDto toEventFullDto(EventModel eventModel, Map<Integer, Long> views, Map<Integer, Integer> confirmedRequests) {
         return new EventFullDto(
                 eventModel.getAnnotation(),
                 CategoryMapper.toCategoryDto(eventModel.getCategory()),
-                0,
+                confirmedRequests.containsKey(eventModel.getId()) ? confirmedRequests.get(eventModel.getId()) : 0,
                 eventModel.getCreatedOn(),
                 eventModel.getDescription(),
                 eventModel.getEventDate(),

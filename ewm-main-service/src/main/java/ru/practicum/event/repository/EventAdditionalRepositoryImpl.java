@@ -18,7 +18,9 @@ public class EventAdditionalRepositoryImpl implements EventAdditionalRepository 
     private EntityManager em;
 
     @Override
-    public List<EventModel> getEventsByAdmin(List<Integer> users, List<State> states, List<Integer> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+    public List<EventModel> getEventsByAdmin(List<Integer> users, List<State> states,
+                                             List<Integer> categories, LocalDateTime rangeStart,
+                                             LocalDateTime rangeEnd, int from, int size) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<EventModel> query = cb.createQuery(EventModel.class);
         Root<EventModel> root = query.from(EventModel.class);
@@ -39,6 +41,43 @@ public class EventAdditionalRepositoryImpl implements EventAdditionalRepository 
         if (rangeEnd != null) {
             predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd));
         }
+
+        query.select(root).where(predicate);
+        return em.createQuery(query).setFirstResult(from).setMaxResults(size).getResultList();
+    }
+
+    @Override
+    public List<EventModel> publicGetEvents(State state, String text,
+                                            List<Integer> categories, Boolean paid,
+                                            LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                            int from, int size) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<EventModel> query = cb.createQuery(EventModel.class);
+        Root<EventModel> root = query.from(EventModel.class);
+        Predicate predicate = cb.conjunction();
+
+        if (text != null && !text.isBlank()) {
+            Predicate annotation = cb.like(cb.lower(root.get("annotation")), "%" + text.toLowerCase() + "%");
+            Predicate description = cb.like(cb.lower(root.get("description")), "%" + text.toLowerCase() + "%");
+            predicate = cb.and(predicate, cb.or(annotation, description));
+        }
+        if (!CollectionUtils.isEmpty(categories)) {
+            predicate = cb.and(predicate, root.get("category").in(categories));
+        }
+        if (paid != null) {
+            predicate = cb.and(predicate, root.get("paid").in(paid));
+        }
+        if (rangeStart == null && rangeEnd == null) {
+            predicate = cb.and(predicate, cb.greaterThanOrEqualTo(root.get("eventDate"), LocalDateTime.now()));
+        } else {
+            if (rangeStart != null) {
+                predicate = cb.and(predicate, cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStart));
+            }
+            if (rangeEnd != null) {
+                predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd));
+            }
+        }
+        predicate = cb.and(predicate, root.get("state").in(state));
 
         query.select(root).where(predicate);
         return em.createQuery(query).setFirstResult(from).setMaxResults(size).getResultList();

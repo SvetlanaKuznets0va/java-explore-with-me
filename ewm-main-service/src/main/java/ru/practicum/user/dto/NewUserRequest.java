@@ -17,5 +17,6 @@ public class NewUserRequest {
     @Size(min = 6, max = 254, message = "Incorrect email size")
     String email;
     @NotBlank(message = "Name is empty")
+    @Size(min = 2, max = 250, message = "Incorrect name size")
     String name;
 }

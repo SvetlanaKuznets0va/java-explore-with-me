@@ -60,6 +60,17 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorApi handleValidationException(ValidationException exception) {
+        log.info(exception.toString());
+        return new ErrorApi(
+                HttpStatus.BAD_REQUEST,
+                "Incorrectly made request.",
+                exception.getLocalizedMessage(),
+                LocalDateTime.now());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorApi handleValidationException(ConstraintViolationException exception) {
         log.info(exception.toString());
         return new ErrorApi(

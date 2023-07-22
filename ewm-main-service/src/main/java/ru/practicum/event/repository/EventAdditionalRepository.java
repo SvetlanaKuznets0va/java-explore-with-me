@@ -10,4 +10,7 @@ public interface EventAdditionalRepository {
         List<EventModel> getEventsByAdmin(List<Integer> users, List<State> states,
                                           List<Integer> categories, LocalDateTime rangeStart,
                                           LocalDateTime rangeEnd, int from, int size);
+
+        List<EventModel> publicGetEvents(State state, String text, List<Integer> categories, Boolean paid,
+                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
 }

@@ -2,8 +2,6 @@ package ru.practicum.event.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -40,14 +38,13 @@ public class PublicEventController {
             @RequestParam(required = false, defaultValue = DEFAULT_FROM) @PositiveOrZero Integer from,
             @RequestParam(required = false, defaultValue = DEFAULT_SIZE) @Positive Integer size,
             HttpServletRequest request) {
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
         return eventService.publicGetEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
-                sort, pageable, request);
+                sort, from, size, request);
     }
 
     @GetMapping("/{id}")
     public EventFullDto publicGetEvent(@PathVariable int id,
-                                         HttpServletRequest request) {
+                                       HttpServletRequest request) {
         return eventService.publicGetEvent(id, request);
     }
 }
