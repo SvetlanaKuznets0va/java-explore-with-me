@@ -2,22 +2,22 @@ package ru.practicum.event.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.event.dto.LocationDto;
-import ru.practicum.event.model.LocationModel;
+import ru.practicum.event.model.Location;
 
 @UtilityClass
 public class LocationMapper {
-    public LocationModel toLocationModel(LocationDto locationDto) {
-        return new LocationModel(
+    public Location toLocationModel(LocationDto locationDto) {
+        return new Location(
                 0,
                 locationDto.getLat(),
                 locationDto.getLon()
         );
     }
 
-    public LocationDto toLocationDto(LocationModel locationModel) {
+    public LocationDto toLocationDto(Location location) {
         return new LocationDto(
-                locationModel.getLat(),
-                locationModel.getLon()
+                location.getLat(),
+                location.getLon()
         );
     }
 }

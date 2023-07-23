@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.category.model.CategoryModel;
+import ru.practicum.category.model.Category;
 import ru.practicum.constants.State;
-import ru.practicum.user.model.UserModel;
+import ru.practicum.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ import static ru.practicum.constants.Constants.LDT_FORMAT;
 @NoArgsConstructor
 @Entity
 @Table(name = "events")
-public class EventModel {
+public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
@@ -31,7 +31,7 @@ public class EventModel {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", referencedColumnName = "id")
-    CategoryModel category;
+    Category category;
 
     String description;
 
@@ -44,7 +44,7 @@ public class EventModel {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "location_id", referencedColumnName = "id")
-    LocationModel location;
+    Location location;
 
     @DateTimeFormat(pattern = LDT_FORMAT)
     LocalDateTime createdOn;
@@ -58,7 +58,7 @@ public class EventModel {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    UserModel initiator;
+    User initiator;
 
     Boolean requestModeration;
 }

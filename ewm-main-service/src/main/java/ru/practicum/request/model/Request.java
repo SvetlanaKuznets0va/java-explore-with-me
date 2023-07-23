@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import ru.practicum.constants.RequestStatus;
-import ru.practicum.event.model.EventModel;
-import ru.practicum.user.model.UserModel;
+import ru.practicum.event.model.Event;
+import ru.practicum.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "requests")
-public class RequestModel {
+public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
@@ -25,12 +25,12 @@ public class RequestModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    EventModel event;
+    Event event;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    UserModel requester;
+    User requester;
 
     @Column(nullable = false)
     LocalDateTime created;

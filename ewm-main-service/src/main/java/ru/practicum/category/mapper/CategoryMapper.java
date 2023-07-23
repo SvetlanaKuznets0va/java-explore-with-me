@@ -3,21 +3,21 @@ package ru.practicum.category.mapper;
 import lombok.experimental.UtilityClass;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
-import ru.practicum.category.model.CategoryModel;
+import ru.practicum.category.model.Category;
 
 @UtilityClass
 public class CategoryMapper {
-    public CategoryModel toCategoryModel(NewCategoryDto newCategoryDto) {
-        return new CategoryModel(
+    public Category toCategoryModel(NewCategoryDto newCategoryDto) {
+        return new Category(
                 0,
                 newCategoryDto.getName()
         );
     }
 
-    public CategoryDto toCategoryDto(CategoryModel categoryModel) {
+    public CategoryDto toCategoryDto(Category category) {
         return new CategoryDto(
-                categoryModel.getId(),
-                categoryModel.getName()
+                category.getId(),
+                category.getName()
         );
     }
 }

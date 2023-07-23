@@ -2,19 +2,19 @@ package ru.practicum.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.HitDto;
-import ru.practicum.model.StatsModel;
+import ru.practicum.model.Stats;
 
 @UtilityClass
 public class StatsMapper {
-    public StatsModel toStatsModel(HitDto hitDto) {
-        return new StatsModel(0,
+    public Stats toStatsModel(HitDto hitDto) {
+        return new Stats(0,
                 hitDto.getApp(),
                 hitDto.getUri(),
                 hitDto.getIp(),
                 hitDto.getTimestamp());
     }
 
-    public HitDto toStatsDto(StatsModel stats) {
+    public HitDto toStatsDto(Stats stats) {
         return new HitDto(stats.getId(),
                 stats.getApp(),
                 stats.getUri(),

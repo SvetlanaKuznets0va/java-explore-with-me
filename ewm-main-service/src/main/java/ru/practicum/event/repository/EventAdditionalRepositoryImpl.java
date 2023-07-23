@@ -2,7 +2,7 @@ package ru.practicum.event.repository;
 
 import org.springframework.util.CollectionUtils;
 import ru.practicum.constants.State;
-import ru.practicum.event.model.EventModel;
+import ru.practicum.event.model.Event;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -18,12 +18,12 @@ public class EventAdditionalRepositoryImpl implements EventAdditionalRepository 
     private EntityManager em;
 
     @Override
-    public List<EventModel> getEventsByAdmin(List<Integer> users, List<State> states,
-                                             List<Integer> categories, LocalDateTime rangeStart,
-                                             LocalDateTime rangeEnd, int from, int size) {
+    public List<Event> getEventsByAdmin(List<Integer> users, List<State> states,
+                                        List<Integer> categories, LocalDateTime rangeStart,
+                                        LocalDateTime rangeEnd, int from, int size) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<EventModel> query = cb.createQuery(EventModel.class);
-        Root<EventModel> root = query.from(EventModel.class);
+        CriteriaQuery<Event> query = cb.createQuery(Event.class);
+        Root<Event> root = query.from(Event.class);
         Predicate predicate = cb.conjunction();
 
         if (!CollectionUtils.isEmpty(users)) {
@@ -47,13 +47,13 @@ public class EventAdditionalRepositoryImpl implements EventAdditionalRepository 
     }
 
     @Override
-    public List<EventModel> publicGetEvents(State state, String text,
-                                            List<Integer> categories, Boolean paid,
-                                            LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                            int from, int size) {
+    public List<Event> publicGetEvents(State state, String text,
+                                       List<Integer> categories, Boolean paid,
+                                       LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                       int from, int size) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<EventModel> query = cb.createQuery(EventModel.class);
-        Root<EventModel> root = query.from(EventModel.class);
+        CriteriaQuery<Event> query = cb.createQuery(Event.class);
+        Root<Event> root = query.from(Event.class);
         Predicate predicate = cb.conjunction();
 
         if (text != null && !text.isBlank()) {

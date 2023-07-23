@@ -23,9 +23,9 @@ public class ErrorHandler {
         return new ErrorApi(HttpStatus.INTERNAL_SERVER_ERROR, ISE_REASON, exception.getMessage(), LocalDateTime.now());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({DataIntegrityViolationException.class, ConflictDataException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorApi handleConstraintViolationException(DataIntegrityViolationException exception) {
+    public ErrorApi handleConstraintViolationException(RuntimeException exception) {
         log.info("ConstraintViolationException", exception);
         return new ErrorApi(
                 HttpStatus.CONFLICT,
@@ -35,43 +35,9 @@ public class ErrorHandler {
         );
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorApi handleConflictDataException(ConflictDataException exception) {
-        log.info("ConflictDataException", exception);
-        return new ErrorApi(
-                HttpStatus.CONFLICT,
-                "Integrity constraint has been violated.",
-                exception.getLocalizedMessage(),
-                LocalDateTime.now()
-        );
-    }
-
-    @ExceptionHandler
+    @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorApi handleValidationException(MethodArgumentNotValidException exception) {
-        log.info(exception.toString());
-        return new ErrorApi(
-                HttpStatus.BAD_REQUEST,
-                "Incorrectly made request.",
-                exception.getLocalizedMessage(),
-                LocalDateTime.now());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorApi handleValidationException(ValidationException exception) {
-        log.info(exception.toString());
-        return new ErrorApi(
-                HttpStatus.BAD_REQUEST,
-                "Incorrectly made request.",
-                exception.getLocalizedMessage(),
-                LocalDateTime.now());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorApi handleValidationException(ConstraintViolationException exception) {
+    public ErrorApi handleValidationException(RuntimeException exception) {
         log.info(exception.toString());
         return new ErrorApi(
                 HttpStatus.BAD_REQUEST,

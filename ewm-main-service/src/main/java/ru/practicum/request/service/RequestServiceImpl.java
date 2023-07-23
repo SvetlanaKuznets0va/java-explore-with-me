@@ -7,16 +7,16 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.constants.RequestStatus;
 import ru.practicum.event.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.event.dto.EventRequestStatusUpdateResult;
-import ru.practicum.event.model.EventModel;
+import ru.practicum.event.model.Event;
 import ru.practicum.event.service.EventService;
 import ru.practicum.exception.ConflictDataException;
 import ru.practicum.exception.InvalidDataException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.mapper.RequestMapper;
-import ru.practicum.request.model.RequestModel;
+import ru.practicum.request.model.Request;
 import ru.practicum.request.repository.RequestRepository;
-import ru.practicum.user.model.UserModel;
+import ru.practicum.user.model.User;
 import ru.practicum.user.service.UserService;
 
 import java.time.LocalDateTime;
@@ -41,8 +41,8 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public ParticipationRequestDto addRequest(int userId, Integer eventId) {
 
-        UserModel requester = userService.findUserById(userId);
-        EventModel event = eventService.findEventModelById(eventId);
+        User requester = userService.findUserById(userId);
+        Event event = eventService.findEventModelById(eventId);
 
         if (event.getInitiator().getId() == userId) {
             throw new ConflictDataException("You are owner this event, request is invalid");
@@ -61,7 +61,7 @@ public class RequestServiceImpl implements RequestService {
             throw new ConflictDataException("Threshold for participation in event has been reached");
         }
 
-        RequestModel newRequest = new RequestModel(0, event, requester, LocalDateTime.now(), getStatus(event));
+        Request newRequest = new Request(0, event, requester, LocalDateTime.now(), getStatus(event));
 
         return RequestMapper.toParticipationRequestDto(requestRepository.save(newRequest));
     }
@@ -69,7 +69,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public ParticipationRequestDto cancelEventRequest(int userId, int requestId) {
-        RequestModel request = requestRepository.findRequestModelByIdAndRequester_Id(requestId, userId)
+        Request request = requestRepository.findRequestModelByIdAndRequester_Id(requestId, userId)
                 .orElseThrow(() -> new NotFoundException("Cancellation request not found"));
 
         request.setStatus(CANCELED);
@@ -88,8 +88,8 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getEventRequestsByEventOwner(int userId, int eventId) {
-        UserModel owner = userService.findUserById(userId);
-        EventModel event = eventService.findEventModelById(eventId);
+        User owner = userService.findUserById(userId);
+        Event event = eventService.findEventModelById(eventId);
         if (!Objects.equals(event.getInitiator().getId(), owner.getId())) {
             throw new InvalidDataException("User is not owner");
         }
@@ -102,7 +102,7 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public EventRequestStatusUpdateResult updateEventRequestsByEventOwner(int userId, int eventId, EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
         userService.findUserById(userId);
-        EventModel event = eventService.findEventModelById(eventId);
+        Event event = eventService.findEventModelById(eventId);
 
         if (event.getInitiator().getId() != userId) {
             throw new InvalidDataException("User is not owner");
@@ -112,17 +112,17 @@ public class RequestServiceImpl implements RequestService {
             return new EventRequestStatusUpdateResult(Collections.emptyList(), Collections.emptyList());
         }
 
-        List<RequestModel> confirmedList = new ArrayList<>();
-        List<RequestModel> rejectedList = new ArrayList<>();
+        List<Request> confirmedList = new ArrayList<>();
+        List<Request> rejectedList = new ArrayList<>();
 
-        List<RequestModel> requests = requestRepository.findAllByIdIn(eventRequestStatusUpdateRequest.getRequestIds());
+        List<Request> requests = requestRepository.findAllByIdIn(eventRequestStatusUpdateRequest.getRequestIds());
 
         if (requests.size() != eventRequestStatusUpdateRequest.getRequestIds().size()) {
             throw new NotFoundException("Count requests does not match");
         }
 
         if (!requests.stream()
-                .map(RequestModel::getStatus)
+                .map(Request::getStatus)
                 .allMatch(RequestStatus.PENDING::equals)) {
             throw new ConflictDataException("Status not valid");
         }
@@ -150,7 +150,7 @@ public class RequestServiceImpl implements RequestService {
                         .collect(Collectors.toList()));
     }
 
-    private RequestStatus getStatus(EventModel event) {
+    private RequestStatus getStatus(Event event) {
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             return CONFIRMED;
         }

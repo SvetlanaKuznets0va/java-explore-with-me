@@ -4,16 +4,16 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.dto.NewCompilationDto;
 import ru.practicum.compilation.dto.UpdateCompilationRequest;
-import ru.practicum.compilation.model.CompilationModel;
+import ru.practicum.compilation.model.Compilation;
 import ru.practicum.event.dto.EventShortDto;
-import ru.practicum.event.model.EventModel;
+import ru.practicum.event.model.Event;
 
 import java.util.List;
 
 @UtilityClass
 public class CompilationMapper {
-    public CompilationModel toCompilationModel(NewCompilationDto ncd, List<EventModel> events) {
-        return new CompilationModel(
+    public Compilation toCompilationModel(NewCompilationDto ncd, List<Event> events) {
+        return new Compilation(
                 0,
                 ncd.getTitle(),
                 ncd.isPinned(),
@@ -21,8 +21,8 @@ public class CompilationMapper {
         );
     }
 
-    public CompilationModel toCompilationModelUpd(CompilationModel cm, UpdateCompilationRequest ucr, List<EventModel> events) {
-        return new CompilationModel(
+    public Compilation toCompilationModelUpd(Compilation cm, UpdateCompilationRequest ucr, List<Event> events) {
+        return new Compilation(
                 cm.getId(),
                 ucr.getTitle() == null ? cm.getTitle() : ucr.getTitle(),
                 ucr.getPinned() == null ? cm.getPinned() : ucr.getPinned(),
@@ -30,7 +30,7 @@ public class CompilationMapper {
         );
     }
 
-    public CompilationDto toCompilationDto(CompilationModel cm, List<EventShortDto> es) {
+    public CompilationDto toCompilationDto(Compilation cm, List<EventShortDto> es) {
         return new CompilationDto(
                 es,
                 cm.getId(),

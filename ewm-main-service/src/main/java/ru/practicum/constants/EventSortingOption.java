@@ -1,6 +1,6 @@
 package ru.practicum.constants;
 
-public enum EventSortVariant {
+public enum EventSortingOption {
     EVENT_DATE,
     VIEWS
 }

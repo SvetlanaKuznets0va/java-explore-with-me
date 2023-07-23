@@ -11,7 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "categories")
-public class CategoryModel {
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;

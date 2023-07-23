@@ -1,10 +1,10 @@
 package ru.practicum.event.service;
 
 import org.springframework.data.domain.Pageable;
-import ru.practicum.constants.EventSortVariant;
+import ru.practicum.constants.EventSortingOption;
 import ru.practicum.constants.State;
 import ru.practicum.event.dto.*;
-import ru.practicum.event.model.EventModel;
+import ru.practicum.event.model.Event;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -27,12 +27,12 @@ public interface EventService {
 
     List<EventShortDto> publicGetEvents(String text, List<Integer> categories, Boolean paid,
                                         LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                        Boolean onlyAvailable, EventSortVariant sort,
+                                        Boolean onlyAvailable, EventSortingOption sort,
                                         int from, int size, HttpServletRequest request);
 
     EventFullDto publicGetEvent(int id, HttpServletRequest request);
 
-    EventModel findEventModelById(int userId);
+    Event findEventModelById(int userId);
 
-    Map<Integer, Long> getViews(List<EventModel> events);
+    Map<Integer, Long> getViews(List<Event> events);
 }

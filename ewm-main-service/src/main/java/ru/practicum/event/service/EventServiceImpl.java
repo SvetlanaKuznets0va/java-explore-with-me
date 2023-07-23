@@ -9,18 +9,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import ru.practicum.category.model.CategoryModel;
+import ru.practicum.category.model.Category;
 import ru.practicum.category.service.CategoryService;
 import ru.practicum.client.StatsClient;
-import ru.practicum.constants.EventSortVariant;
+import ru.practicum.constants.EventSortingOption;
 import ru.practicum.constants.State;
 import ru.practicum.dto.HitDto;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.mapper.LocationMapper;
-import ru.practicum.event.model.EventModel;
-import ru.practicum.event.model.LocationModel;
+import ru.practicum.event.model.Event;
+import ru.practicum.event.model.Location;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.repository.LocationRepository;
 import ru.practicum.exception.ConflictDataException;
@@ -28,7 +28,7 @@ import ru.practicum.exception.InvalidDataException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.request.repository.RequestRepository;
-import ru.practicum.user.model.UserModel;
+import ru.practicum.user.model.User;
 import ru.practicum.user.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
 
 import static ru.practicum.constants.Constants.APP_NAME;
 import static ru.practicum.constants.Constants.LDT_FORMAT;
-import static ru.practicum.constants.EventSortVariant.EVENT_DATE;
-import static ru.practicum.constants.EventSortVariant.VIEWS;
+import static ru.practicum.constants.EventSortingOption.EVENT_DATE;
+import static ru.practicum.constants.EventSortingOption.VIEWS;
 import static ru.practicum.constants.State.PENDING;
 import static ru.practicum.constants.State.PUBLISHED;
 
@@ -62,11 +62,11 @@ public class EventServiceImpl implements EventService {
     public EventFullDto privateAddEvent(int userId, NewEventDto newEventDto) {
         checkEventDate(newEventDto.getEventDate());
 
-        UserModel initiator = userService.findUserById(userId);
-        CategoryModel category = categoryService.findCategoryById(newEventDto.getCategory());
-        LocationModel location = addLocation(newEventDto.getLocation());
+        User initiator = userService.findUserById(userId);
+        Category category = categoryService.findCategoryById(newEventDto.getCategory());
+        Location location = addLocation(newEventDto.getLocation());
 
-        EventModel event = EventMapper.toEventModel(newEventDto, initiator, category, location);
+        Event event = EventMapper.toEventModel(newEventDto, initiator, category, location);
 
         event = eventRepository.save(event);
         log.info("Event {} was saved", event);
@@ -78,7 +78,7 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> privateGetEventsByUser(int userId, Pageable pageable) {
         userService.findUserById(userId);
 
-        List<EventModel> events = eventRepository.findAllByInitiatorId(userId, pageable);
+        List<Event> events = eventRepository.findAllByInitiatorId(userId, pageable);
         Map<Integer, Long> views = getViews(events);
         return events.stream()
                 .map(e -> EventMapper.toEventShortDto(e, views))
@@ -89,7 +89,7 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public EventFullDto privateGetEventByUser(int userId, int eventId) {
         userService.findUserById(userId);
-        EventModel event = eventRepository.findByIdAndInitiatorId(eventId, userId)
+        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
         Map<Integer, Long> views = getViews(Collections.singletonList(event));
         Map<Integer, Integer> confirmedRequests = getConfirmedRequests(Collections.singletonList(event));
@@ -102,17 +102,17 @@ public class EventServiceImpl implements EventService {
         checkEventDate(updateEventUserRequest.getEventDate());
 
         userService.findUserById(userId);
-        CategoryModel categoryModel = null;
+        Category category = null;
         if (updateEventUserRequest.getCategory() != null) {
-            categoryModel = categoryService.findCategoryById(updateEventUserRequest.getCategory());
+            category = categoryService.findCategoryById(updateEventUserRequest.getCategory());
         }
 
-        EventModel event = getEventModelByUser(userId, eventId);
+        Event event = getEventModelByUser(userId, eventId);
         if (event.getState() == PUBLISHED) {
             throw new ConflictDataException("Event can be updated if it is canceled or moderation status");
         }
 
-        EventModel updateEvent = EventMapper.toEventModelUserUpdate(event, updateEventUserRequest, categoryModel);
+        Event updateEvent = EventMapper.toEventModelUserUpdate(event, updateEventUserRequest, category);
         updateEvent = eventRepository.save(updateEvent);
         log.info("Event {} was updated {}", event, updateEvent);
         return EventMapper.toEventFullDto(updateEvent);
@@ -125,7 +125,7 @@ public class EventServiceImpl implements EventService {
             throw new InvalidDataException("Invalid date format");
         }
 
-        List<EventModel> events = eventRepository.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+        List<Event> events = eventRepository.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
 
         if (CollectionUtils.isEmpty(events)) {
             return Collections.emptyList();
@@ -143,17 +143,17 @@ public class EventServiceImpl implements EventService {
         if (updateEventAdminRequest.getEventDate() != null && updateEventAdminRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
             throw new ValidationException("Event cannot be updated until the start date is less than an hour away");
         }
-        CategoryModel categoryModel = null;
+        Category category = null;
         if (updateEventAdminRequest.getCategory() != null) {
-            categoryModel = categoryService.findCategoryById(updateEventAdminRequest.getCategory());
+            category = categoryService.findCategoryById(updateEventAdminRequest.getCategory());
         }
-        EventModel event = eventRepository.findById(eventId)
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
         if (event.getState() != PENDING) {
             throw new ConflictDataException("Event cannot be updated it is not pending status");
         }
 
-        EventModel updateEvent = EventMapper.toEventModelAdminUpdate(event, updateEventAdminRequest, categoryModel);
+        Event updateEvent = EventMapper.toEventModelAdminUpdate(event, updateEventAdminRequest, category);
         updateEvent = eventRepository.save(updateEvent);
         log.info("Event {} was updated {} by admin", event, updateEvent);
         return EventMapper.toEventFullDto(updateEvent);
@@ -163,7 +163,7 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public List<EventShortDto> publicGetEvents(String text, List<Integer> categories, Boolean paid,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                               Boolean onlyAvailable, EventSortVariant sort,
+                                               Boolean onlyAvailable, EventSortingOption sort,
                                                int from, int size, HttpServletRequest request) {
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
@@ -176,7 +176,7 @@ public class EventServiceImpl implements EventService {
             throw new ValidationException("Invalid date format");
         }
 
-        List<EventModel> events = eventRepository.publicGetEvents(PUBLISHED, text, categories, paid, rangeStart, rangeEnd, from, size);
+        List<Event> events = eventRepository.publicGetEvents(PUBLISHED, text, categories, paid, rangeStart, rangeEnd, from, size);
 
         if (events.isEmpty()) {
             return Collections.emptyList();
@@ -209,7 +209,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public EventFullDto publicGetEvent(int id, HttpServletRequest request) {
-        EventModel event = eventRepository.findById(id)
+        Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", id)));
 
         if (event.getState() != PUBLISHED) {
@@ -225,18 +225,18 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public EventModel findEventModelById(int eventId) {
+    public Event findEventModelById(int eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
     }
 
     @Override
-    public Map<Integer, Long> getViews(List<EventModel> events) {
+    public Map<Integer, Long> getViews(List<Event> events) {
         Map<Integer, Long> views = new HashMap<>();
 
-        List<EventModel> publishedOnEvents = events.stream()
+        List<Event> publishedOnEvents = events.stream()
                 .filter(event -> event.getPublishedOn() != null)
-                .sorted(Comparator.comparing(EventModel::getPublishedOn))
+                .sorted(Comparator.comparing(Event::getPublishedOn))
                 .collect(Collectors.toList());
 
         if (publishedOnEvents.isEmpty()) {
@@ -246,7 +246,7 @@ public class EventServiceImpl implements EventService {
         LocalDateTime start = publishedOnEvents.get(0).getPublishedOn();
         LocalDateTime end = publishedOnEvents.get(publishedOnEvents.size() - 1).getPublishedOn().plusSeconds(1);
         List<String> uris = publishedOnEvents.stream()
-                .map(EventModel::getId)
+                .map(Event::getId)
                 .map(id -> ("/events/" + id))
                 .collect(Collectors.toList());
 
@@ -266,21 +266,21 @@ public class EventServiceImpl implements EventService {
         return views;
     }
 
-    private Map<Integer, Integer> getConfirmedRequests(List<EventModel> events) {
+    private Map<Integer, Integer> getConfirmedRequests(List<Event> events) {
         return events.stream()
                 .filter(e -> e.getPublishedOn() != null)
-                .collect(Collectors.toMap(EventModel::getId, e -> {
+                .collect(Collectors.toMap(Event::getId, e -> {
                     Integer cr = requestRepository.getConfirmedRequests(e.getId());
                     return cr == null ? 0 : cr;
                 }));
     }
 
-    private EventModel getEventModelByUser(int userId, int eventId) {
+    private Event getEventModelByUser(int userId, int eventId) {
         return eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
     }
 
-    private LocationModel addLocation(LocationDto locationDto) {
+    private Location addLocation(LocationDto locationDto) {
         return locationRepository.save(LocationMapper.toLocationModel(locationDto));
     }
 

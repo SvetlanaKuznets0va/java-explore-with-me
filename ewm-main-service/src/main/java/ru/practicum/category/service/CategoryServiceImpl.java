@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
-import ru.practicum.category.model.CategoryModel;
+import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.exception.NotFoundException;
 
@@ -26,29 +26,29 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryDto addCategory(NewCategoryDto newCategoryDto) {
-        CategoryModel categoryModel = categoryRepository.save(CategoryMapper.toCategoryModel(newCategoryDto));
-        log.info("Category {} was saved", categoryModel);
-        return CategoryMapper.toCategoryDto(categoryModel);
+        Category category = categoryRepository.save(CategoryMapper.toCategoryModel(newCategoryDto));
+        log.info("Category {} was saved", category);
+        return CategoryMapper.toCategoryDto(category);
     }
 
     @Override
     @Transactional
     public CategoryDto updateCategory(int catId, NewCategoryDto newCategoryDto) {
-        Optional<CategoryModel> categoryModelOpt = categoryRepository.findById(catId);
-        CategoryModel categoryModel = categoryModelOpt.orElseThrow(() -> nfeException(catId));
-        categoryModel.setName(newCategoryDto.getName());
-        categoryRepository.save(categoryModel);
-        log.info("Category {} was updated to {}", categoryModelOpt.get(), categoryModel);
-        return CategoryMapper.toCategoryDto(categoryModel);
+        Optional<Category> categoryModelOpt = categoryRepository.findById(catId);
+        Category category = categoryModelOpt.orElseThrow(() -> throwNfeException(catId));
+        category.setName(newCategoryDto.getName());
+        categoryRepository.save(category);
+        log.info("Category {} was updated to {}", categoryModelOpt.get(), category);
+        return CategoryMapper.toCategoryDto(category);
     }
 
     @Override
     @Transactional
     public void deleteCategory(int catId) {
         //TODO добавить проверку на привязку категории к событию
-        CategoryModel categoryModel = categoryRepository.findById(catId).orElseThrow(() -> nfeException(catId));
+        Category category = categoryRepository.findById(catId).orElseThrow(() -> throwNfeException(catId));
         categoryRepository.deleteById(catId);
-        log.info("Category {} was deleted", categoryModel);
+        log.info("Category {} was deleted", category);
     }
 
     @Override
@@ -62,16 +62,16 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public CategoryDto getCategory(int catId) {
-        CategoryModel categoryModel = categoryRepository.findById(catId).orElseThrow(() -> nfeException(catId));
-        return CategoryMapper.toCategoryDto(categoryModel);
+        Category category = categoryRepository.findById(catId).orElseThrow(() -> throwNfeException(catId));
+        return CategoryMapper.toCategoryDto(category);
     }
 
     @Override
-    public CategoryModel findCategoryById(int catId) {
-        return categoryRepository.findById(catId).orElseThrow(() -> nfeException(catId));
+    public Category findCategoryById(int catId) {
+        return categoryRepository.findById(catId).orElseThrow(() -> throwNfeException(catId));
     }
 
-    private NotFoundException nfeException(int catId) {
+    private NotFoundException throwNfeException(int catId) {
         return new NotFoundException(String.format("Category with id %d not found", catId));
     }
 }

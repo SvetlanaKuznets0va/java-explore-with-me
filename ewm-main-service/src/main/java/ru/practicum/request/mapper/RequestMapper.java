@@ -2,17 +2,17 @@ package ru.practicum.request.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.request.dto.ParticipationRequestDto;
-import ru.practicum.request.model.RequestModel;
+import ru.practicum.request.model.Request;
 
 @UtilityClass
 public class RequestMapper {
-    public ParticipationRequestDto toParticipationRequestDto(RequestModel requestModel) {
+    public ParticipationRequestDto toParticipationRequestDto(Request request) {
         return new ParticipationRequestDto(
-                requestModel.getCreated(),
-                requestModel.getEvent().getId(),
-                requestModel.getId(),
-                requestModel.getRequester().getId(),
-                requestModel.getStatus()
+                request.getCreated(),
+                request.getEvent().getId(),
+                request.getId(),
+                request.getRequester().getId(),
+                request.getStatus()
         );
     }
 }

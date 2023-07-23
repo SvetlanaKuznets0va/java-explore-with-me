@@ -11,7 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "locations")
-public class LocationModel {
+public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;

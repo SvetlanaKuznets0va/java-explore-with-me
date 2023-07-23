@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.constants.EventSortVariant;
+import ru.practicum.constants.EventSortingOption;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.service.EventService;
@@ -34,7 +34,7 @@ public class PublicEventController {
             @RequestParam(required = false) @DateTimeFormat(pattern = LDT_FORMAT) LocalDateTime rangeStart,
             @RequestParam(required = false) @DateTimeFormat(pattern = LDT_FORMAT) LocalDateTime rangeEnd,
             @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable,
-            @RequestParam(required = false) EventSortVariant sort,
+            @RequestParam(required = false) EventSortingOption sort,
             @RequestParam(required = false, defaultValue = DEFAULT_FROM) @PositiveOrZero Integer from,
             @RequestParam(required = false, defaultValue = DEFAULT_SIZE) @Positive Integer size,
             HttpServletRequest request) {

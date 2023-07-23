@@ -9,11 +9,11 @@ import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.dto.NewCompilationDto;
 import ru.practicum.compilation.dto.UpdateCompilationRequest;
 import ru.practicum.compilation.mapper.CompilationMapper;
-import ru.practicum.compilation.model.CompilationModel;
+import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.repository.CompilationRepository;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.mapper.EventMapper;
-import ru.practicum.event.model.EventModel;
+import ru.practicum.event.model.Event;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.service.EventService;
 import ru.practicum.exception.NotFoundException;
@@ -34,13 +34,13 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
-        List<EventModel> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
 
         if (!newCompilationDto.getEvents().isEmpty()) {
             events = eventRepository.findAllByIdIn(newCompilationDto.getEvents());
         }
 
-        CompilationModel compilation = compilationRepository.save(
+        Compilation compilation = compilationRepository.save(
                 CompilationMapper.toCompilationModel(newCompilationDto, events));
 
         Map<Integer, Long> views = eventService.getViews(events);
@@ -63,8 +63,8 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public CompilationDto updateCompilation(int compId, UpdateCompilationRequest updateCompilationRequest) {
-        List<EventModel> events;
-        CompilationModel compilation = compilationRepository.findById(compId)
+        List<Event> events;
+        Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation not found"));
 
         if (updateCompilationRequest.getEvents() != null) {
@@ -73,7 +73,7 @@ public class CompilationServiceImpl implements CompilationService {
             events = compilation.getEvents();
         }
 
-        CompilationModel compilationUpd = compilationRepository.save(
+        Compilation compilationUpd = compilationRepository.save(
                 CompilationMapper.toCompilationModelUpd(compilation, updateCompilationRequest, events));
 
         Map<Integer, Long> views = eventService.getViews(events);
@@ -87,7 +87,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional(readOnly = true)
     public List<CompilationDto> getAllCompilations(boolean pinned, Pageable pageable) {
-        List<CompilationModel> compilations = pinned ?
+        List<Compilation> compilations = pinned ?
                 compilationRepository.findAllByPinned(true, pageable) : compilationRepository.findAll(pageable).toList();
 
         return compilations.stream()
@@ -105,7 +105,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional(readOnly = true)
     public CompilationDto getCompilationById(int compId) {
-        CompilationModel compilation = compilationRepository.findById(compId)
+        Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation not found"));
 
         Map<Integer, Long> views = eventService.getViews(compilation.getEvents());

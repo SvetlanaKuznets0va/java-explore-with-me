@@ -11,7 +11,7 @@ import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.dto.NewUserRequest;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.mapper.UserMapper;
-import ru.practicum.user.model.UserModel;
+import ru.practicum.user.model.User;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,9 +26,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto addUser(NewUserRequest newUserRequest) {
-            UserModel userModel = userRepository.save(UserMapper.toUserModel(newUserRequest));
-            log.info("Saved user {}", userModel);
-            return UserMapper.toUserDto(userModel);
+            User user = userRepository.save(UserMapper.toUserModel(newUserRequest));
+            log.info("Saved user {}", user);
+            return UserMapper.toUserDto(user);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserModel findUserById(int userId) {
+    public User findUserById(int userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
     }
 }

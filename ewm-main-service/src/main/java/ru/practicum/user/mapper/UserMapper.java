@@ -4,30 +4,30 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.user.dto.NewUserRequest;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.dto.UserShortDto;
-import ru.practicum.user.model.UserModel;
+import ru.practicum.user.model.User;
 
 @UtilityClass
 public class UserMapper {
-    public UserModel toUserModel(NewUserRequest newUserRequest) {
-        return new UserModel(
+    public User toUserModel(NewUserRequest newUserRequest) {
+        return new User(
                 0,
                 newUserRequest.getName(),
                 newUserRequest.getEmail()
         );
     }
 
-    public UserDto toUserDto(UserModel userModel) {
+    public UserDto toUserDto(User user) {
         return new UserDto(
-                userModel.getId(),
-                userModel.getEmail(),
-                userModel.getName()
+                user.getId(),
+                user.getEmail(),
+                user.getName()
         );
     }
 
-    public UserShortDto toUserShortDto(UserModel userModel) {
+    public UserShortDto toUserShortDto(User user) {
         return new UserShortDto(
-                userModel.getId(),
-                userModel.getName()
+                user.getId(),
+                user.getName()
         );
     }
 }
