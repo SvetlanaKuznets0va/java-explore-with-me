@@ -11,8 +11,11 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.dto.HitDto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+
+import static ru.practicum.constants.Constants.LDT_FORMAT;
 
 @Service
 public class StatsClient extends BaseClient {
@@ -31,21 +34,22 @@ public class StatsClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-
+        String s = start.format(DateTimeFormatter.ofPattern(LDT_FORMAT));
+        String e = end.format(DateTimeFormatter.ofPattern(LDT_FORMAT));
         Map<String, Object> parameters;
         StringBuilder path = new StringBuilder("/stats?");
         path.append("start={start}").append("&end={end}");
         if (CollectionUtils.isEmpty(uris)) {
             parameters = Map.of(
-                    "start", start,
-                    "end", end,
+                    "start", s,
+                    "end", e,
                     "unique", unique
             );
             path.append("&unique={unique}");
         } else {
             parameters = Map.of(
-                    "start", start,
-                    "end", end,
+                    "start", s,
+                    "end", e,
                     "uris", uris,
                     "unique", unique
             );

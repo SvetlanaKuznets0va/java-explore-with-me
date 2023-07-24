@@ -9,7 +9,7 @@ import ru.practicum.dto.HitDto;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.StatsMapper;
-import ru.practicum.model.StatsModel;
+import ru.practicum.model.Stats;
 import ru.practicum.repository.StatsRepository;
 
 import java.time.LocalDateTime;
@@ -24,15 +24,15 @@ public class StatsServiceImpl implements StatsService {
     @Override
     @Transactional
     public HitDto add(HitDto hitDto) {
-        StatsModel statsModel = repository.save(StatsMapper.toStatsModel(hitDto));
-        log.info("Stats saved: {}", statsModel);
-        return StatsMapper.toStatsDto(statsModel);
+        Stats stats = repository.save(StatsMapper.toStatsModel(hitDto));
+        log.info("Stats saved: {}", stats);
+        return StatsMapper.toStatsDto(stats);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<StatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        if (start.isAfter(end) || start.isEqual(end)) {
+        if (start == null || end == null || start.isAfter(end) || start.isEqual(end)) {
             throw new ValidationException("Invalid date format");
         }
 
