@@ -17,10 +17,13 @@ import ru.practicum.constants.State;
 import ru.practicum.dto.HitDto;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.event.dto.*;
+import ru.practicum.event.mapper.CommentMapper;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.mapper.LocationMapper;
+import ru.practicum.event.model.Comment;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.Location;
+import ru.practicum.event.repository.CommentRepository;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.repository.LocationRepository;
 import ru.practicum.exception.ConflictDataException;
@@ -35,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static ru.practicum.constants.Constants.APP_NAME;
@@ -53,6 +57,7 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
 
     private final StatsClient statsClient;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -80,8 +85,9 @@ public class EventServiceImpl implements EventService {
 
         List<Event> events = eventRepository.findAllByInitiatorId(userId, pageable);
         Map<Integer, Long> views = getViews(events);
+        Map<Integer, List<CommentDto>> commentsDto = getCommentsDto(events);
         return events.stream()
-                .map(e -> EventMapper.toEventShortDto(e, views))
+                .map(e -> EventMapper.toEventShortDto(e, views, commentsDto.get(e.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -191,8 +197,10 @@ public class EventServiceImpl implements EventService {
                     .collect(Collectors.toList());
         }
 
+        Map<Integer, List<CommentDto>> comments = getCommentsDto(events);
+
         List<EventShortDto> result = events.stream()
-                .map(e -> EventMapper.toEventShortDto(e, views))
+                .map(e -> EventMapper.toEventShortDto(e, views, comments.get(e.getId())))
                 .collect(Collectors.toList());
 
         if (sort == VIEWS) {
@@ -264,6 +272,66 @@ public class EventServiceImpl implements EventService {
             views.put(eventId, views.getOrDefault(eventId, 0L) + stat.getHits());
         });
         return views;
+    }
+
+    @Override
+    @Transactional
+    public CommentDto addComment(int userId, int eventId, CommentDto text) {
+        User user = userService.findUserById(userId);
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
+
+        if (event.getState() != PUBLISHED) {
+            throw new InvalidDataException("Event is not published");
+        }
+
+        Comment comment = commentRepository.save(CommentMapper.toComment(eventId, userId, text));
+        log.info("Comment was saved for event id={}", eventId);
+        return CommentMapper.toCommentDto(comment, user.getName());
+    }
+
+    @Override
+    @Transactional
+    public CommentDto updateComment(int userId, int eventId, int commentId, CommentDto text) {
+        User user = userService.findUserById(userId);
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
+
+        if (event.getState() != PUBLISHED) {
+            throw new InvalidDataException("Event is not published");
+        }
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment not found"));
+
+        comment.setText(text.getText());
+
+        comment = commentRepository.save(comment);
+        log.info("Comment was updated for event id={}", eventId);
+        return CommentMapper.toCommentDto(comment, user.getName());
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(int eventId, int commentId) {
+        commentRepository.deleteById(commentId);
+        log.info("Comment was deleted for event id={}", eventId);
+    }
+
+    private Map<Integer, List<CommentDto>> getCommentsDto(List<Event> events) {
+        List<Integer> eventIds = events.stream().map(Event::getId).collect(Collectors.toList());
+        List<Comment> comments = commentRepository.findCommentsByEventIdIn(eventIds);
+        Set<Integer> userIds = comments.stream().map(Comment::getUserId).collect(Collectors.toSet());
+        List<User> users = userService.findUsersById(new ArrayList<>(userIds));
+        Map<Integer, String> userIdToNameMap = users.stream().collect(Collectors.toMap(User::getId, User::getName));
+
+        Function<Comment, CommentDto> translate = c -> {
+            String name = userIdToNameMap.get(c.getUserId());
+                   return CommentMapper.toCommentDto(c, name);
+        };
+
+        return comments.stream().collect(Collectors.groupingBy(Comment::getEventId,
+                Collectors.mapping(translate, Collectors.toList())));
     }
 
     private Map<Integer, Integer> getConfirmedRequests(List<Event> events) {

@@ -35,4 +35,10 @@ public interface EventService {
     Event findEventModelById(int userId);
 
     Map<Integer, Long> getViews(List<Event> events);
+
+    CommentDto addComment(int userId, int eventId, CommentDto text);
+
+    CommentDto updateComment(int userId, int eventId, int commentId, CommentDto text);
+
+    void deleteComment(int eventId, int commentId);
 }

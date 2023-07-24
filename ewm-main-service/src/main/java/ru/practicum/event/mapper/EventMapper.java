@@ -13,6 +13,8 @@ import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static ru.practicum.constants.AdminStateAction.PUBLISH_EVENT;
@@ -68,7 +70,7 @@ public class EventMapper {
         return new EventFullDto(
                 event.getAnnotation(),
                 CategoryMapper.toCategoryDto(event.getCategory()),
-                confirmedRequests.containsKey(event.getId()) ? confirmedRequests.get(event.getId()) : 0,
+                confirmedRequests.getOrDefault(event.getId(), 0),
                 event.getCreatedOn(),
                 event.getDescription(),
                 event.getEventDate(),
@@ -95,7 +97,23 @@ public class EventMapper {
                 UserMapper.toUserShortDto(event.getInitiator()),
                 event.getPaid(),
                 event.getTitle(),
-                views.containsKey(event.getId()) ? views.get(event.getId()) : 0
+                views.containsKey(event.getId()) ? views.get(event.getId()) : 0,
+                Collections.emptyList()
+        );
+    }
+
+    public EventShortDto toEventShortDto(Event event, Map<Integer, Long> views, List<CommentDto> comments) {
+        return new EventShortDto(
+                event.getAnnotation(),
+                CategoryMapper.toCategoryDto(event.getCategory()),
+                0,
+                event.getEventDate(),
+                event.getId(),
+                UserMapper.toUserShortDto(event.getInitiator()),
+                event.getPaid(),
+                event.getTitle(),
+                views.containsKey(event.getId()) ? views.get(event.getId()) : 0,
+                comments
         );
     }
 

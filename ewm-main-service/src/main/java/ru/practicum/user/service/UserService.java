@@ -15,4 +15,6 @@ public interface UserService {
     void deleteUserById(int userId);
 
     User findUserById(int userId);
+
+    List<User> findUsersById(List<Integer> ids);
 }

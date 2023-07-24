@@ -9,6 +9,7 @@ import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static ru.practicum.constants.Constants.LDT_FORMAT;
 
@@ -27,4 +28,5 @@ public class EventShortDto {
     private boolean paid;
     private String title;
     private long views;
+    private List<CommentDto> comments;
 }

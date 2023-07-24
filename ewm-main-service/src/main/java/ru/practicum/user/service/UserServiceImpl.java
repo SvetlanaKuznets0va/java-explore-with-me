@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.dto.NewUserRequest;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
+import ru.practicum.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,5 +58,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User findUserById(int userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @Override
+    @Transactional
+    public List<User> findUsersById(List<Integer> ids) {
+        return userRepository.findAllByIdIn(ids);
     }
 }
