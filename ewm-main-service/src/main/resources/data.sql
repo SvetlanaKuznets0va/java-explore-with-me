@@ -1,7 +1,7 @@
-INSERT INTO users VALUES (1, 'masha@mail.ru', 'Маша Петрова') ON CONFLICT DO NOTHING;
-INSERT INTO locations VALUES (1, 48.8611, -44.3287) ON CONFLICT DO NOTHING;
-INSERT INTO categories VALUES (1, 'Producer67') ON CONFLICT DO NOTHING;
-INSERT INTO events VALUES (1,
+INSERT INTO users VALUES (9999, 'masha@mail.ru', 'Маша Петрова') ON CONFLICT DO NOTHING;
+INSERT INTO locations VALUES (9999, 48.8611, -44.3287) ON CONFLICT DO NOTHING;
+INSERT INTO categories VALUES (9999, 'Producer67') ON CONFLICT DO NOTHING;
+INSERT INTO events VALUES (9999,
                            'Hic quidem hic minima',
                            current_date,
                            'Praesentium nihil necessitatibus.',
@@ -12,7 +12,7 @@ INSERT INTO events VALUES (1,
                            true,
                            'PUBLISHED',
                            'Quos minus dolor',
-                           1,
-                           1,
-                           1)
+                           9999,
+                           9999,
+                           9999)
 ON CONFLICT DO NOTHING;

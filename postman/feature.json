@@ -8,6 +8,19 @@
 	"item": [
 		{
 			"name": "Добавление комментария",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 or 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200,201]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -20,7 +33,7 @@
 						}
 					}
 				},
-				"url": "http://localhost:8080/users/1/events/1/comment"
+				"url": "http://localhost:8080/users/9999/events/9999/comment"
 			},
 			"response": []
 		},
@@ -48,7 +61,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": "http://localhost:8080/users/1/events"
+				"url": "http://localhost:8080/users/9999/events"
 			},
 			"response": []
 		},
@@ -85,7 +98,7 @@
 						}
 					}
 				},
-				"url": "http://localhost:8080/users/1/events/1/comment/1"
+				"url": "http://localhost:8080/users/9999/events/9999/comment/1"
 			},
 			"response": []
 		},
@@ -107,7 +120,7 @@
 			"request": {
 				"method": "DELETE",
 				"header": [],
-				"url": "http://localhost:8080/admin/events/1/comment/1"
+				"url": "http://localhost:8080/admin/events/9999/comment/1"
 			},
 			"response": []
 		}
