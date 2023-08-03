@@ -71,4 +71,22 @@ public class PrivateEventController {
                                                                          @Valid @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
         return requestService.updateEventRequestsByEventOwner(userId, eventId, eventRequestStatusUpdateRequest);
     }
+
+    @PostMapping("/{eventId}/comment")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentDto addComment(@PathVariable int userId,
+                                 @PathVariable int eventId,
+                                 @RequestBody CommentDto text) {
+        log.info("Added comment to event id={} by user id={}", eventId, userId);
+        return eventService.addComment(userId, eventId, text);
+    }
+
+    @PatchMapping("/{eventId}/comment/{commentId}")
+    public CommentDto updateComment(@PathVariable int userId,
+                                 @PathVariable int eventId,
+                                 @PathVariable int commentId,
+                                 @RequestBody CommentDto text) {
+        log.info("Update comment to event id={} by user id={}", eventId, userId);
+        return eventService.updateComment(userId, eventId, commentId, text);
+    }
 }

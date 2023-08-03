@@ -3,6 +3,7 @@ package ru.practicum.event.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.constants.State;
@@ -40,7 +41,14 @@ public class AdminEventController {
 
     @PatchMapping("/{eventId}")
     public EventFullDto updateEventByAdmin(@PathVariable int eventId,
-                                          @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
+                                           @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         return eventService.adminUpdateEventById(eventId, updateEventAdminRequest);
+    }
+
+    @DeleteMapping("/{eventId}/comment/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable int eventId,
+                              @PathVariable int commentId) {
+        eventService.deleteComment(eventId, commentId);
     }
 }
